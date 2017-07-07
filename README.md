@@ -1,6 +1,9 @@
 # debserve
 Debian-based repository creation and hosting via Aptly and Apache
 
+***Dockerhub:***
+https://hub.docker.com/r/davidpatawaran/debserve/
+
 ***USAGE***
 
 clone repo into a directory, cd into the directory, and run the commands below, which will build a docker container from source and then run the container, creating a repository consisting of all packages in the ~/test-debs directory and hosted at localhost:4000
@@ -31,6 +34,3 @@ sudo docker run -p 4000:80 -v ~/test-debs:/debs davidpatawaran/debserve
 - automatic repo updating when changes are made to the host .deb directory
 - removed company proxy
 - i386 support
-
-***Dockerhub:***
-https://hub.docker.com/r/davidpatawaran/debserve/
