@@ -32,5 +32,5 @@ sudo docker run -p 4000:80 -v ~/test-debs:/debs davidpatawaran/debserve
 - removed company proxy
 - i386 support
 
-***Dockerhub Link***
+***Dockerhub:***
 https://hub.docker.com/r/davidpatawaran/debserve/
