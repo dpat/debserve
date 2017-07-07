@@ -15,7 +15,8 @@ clone repo into a directory, cd into the directory, and run the commands below, 
 
 - The -v flag mounts a specified host directory into the container, enabling the container to share files in this directory with the host. This creates a location to upload packages and allows for repo updates without restarting the container.
 
-*** ALPHA VERSION ***
+***ALPHA VERSION***
+
 Does not currently support repo signing
 
 Container which builds and hosts a public repository from a directory of .deb packages and updates this repository when changes are made to the .deb directory
