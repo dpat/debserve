@@ -43,19 +43,19 @@ stat -t debs > deb_check.txt
 while true; do
 
     sleep 30
-    DIR_TO_CHECK='debs'
-    OLD_STAT_FILE='/deb_check.txt'
+    CHECK_DIR='debs'
+    INIT_STAT='/deb_check.txt'
     
-    if [ -e $OLD_STAT_FILE ]
+    if [ -e $INIT_STAT]
     then
-        OLD_STAT=`cat $OLD_STAT_FILE`
+        HOLD_STAT=`cat $INIT_STAT`
     else
-        OLD_STAT="nothing"
+        HOLD_STAT="nothing"
     fi
  
-    NEW_STAT=`stat -t $DIR_TO_CHECK`
+    CHECK_STAT=`stat -t $CHECK_DIR`
  
-    if [ "$OLD_STAT" != "$NEW_STAT" ]
+    if [ "$HOLD_STAT" != "$CHECK_STAT" ]
     then
         aptly publish drop $DISTRIBUTION
         aptly repo drop $REPO_NAME
@@ -71,7 +71,7 @@ while true; do
         rm -r /var/www/html
         mkdir /var/www/html
         cp -r ~/.aptly/public/. /var/www/html/.
-        echo $NEW_STAT > $OLD_STAT_FILE
+        echo $NEW_STAT > $INIT_STAT
     fi
 
 done
