@@ -12,66 +12,94 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+function main {
+    init_script
+    error_check
 
-set -e
+    create_repo
+    sign_repo
+    serve_repo
 
-if [ ! -d /debs ]
-then
-    echo "Mount your Debian package directory to /debs."
-    exit 1
-fi
+    update_repo
+}
 
-# create repo from .deb packages 
-aptly repo create \
-    -component="$COMPONENT" \
-    -distribution="$DISTRIBUTION" \
-    $REPO_NAME
-aptly repo add $REPO_NAME /debs/
-aptly publish repo \
-    -architectures="$ARCHITECTURES" \
-    -skip-signing=true \
-    $REPO_NAME
+# create repo from .deb packages
+function create_repo {
+    aptly repo create \
+        -component="$COMPONENT" \
+        -distribution="$DISTRIBUTION" \
+        $REPO_NAME
+    aptly repo add $REPO_NAME /debs/
+    aptly publish repo \
+        -architectures="$ARCHITECTURES" \
+        -skip-signing=true \
+        $REPO_NAME
+}
 
-# initiate apache server with repo
-rm /var/www/html/index.html
-cp -r ~/.aptly/public/. /var/www/html/.
-/usr/sbin/apache2ctl start
+# manually sign Release file for authenticated repo if specified
+# aptly gpg2 signing is not supported so this is done manually
+function sign_repo {
+    if [ "$GPG_ID" != "" ]
+    then
+        gpg -u $GPG_ID --batch --pinentry-mode loopback --passphrase "$GPG_PASS" \
+        --clearsign -o $RELEASE_PATH/InRelease $RELEASE_PATH/Release
+        gpg -u $GPG_ID --batch --pinentry-mode loopback --passphrase "$GPG_PASS" \
+        -abs -o $RELEASE_PATH/Release.gpg $RELEASE_PATH/Release
+    fi
+}
+
+# delete repo in order to re-publish
+function drop_repo {
+    aptly publish drop $DISTRIBUTION
+    aptly repo drop $REPO_NAME
+}
+
+# move repo to whatever location hosting software is using
+function serve_repo {
+    rm -r /var/www/html
+    mkdir /var/www/html
+    cp -r ~/.aptly/public/. /var/www/html/.
+}
 
 # check for changes to .deb directory
 # update repo when change is detected
-stat -t debs > deb_check.txt
-while true; do
-
-    sleep 30
+function update_repo {
     CHECK_DIR='debs'
-    INIT_STAT='/deb_check.txt'
-    
-    if [ -e $INIT_STAT]
+    stat -t $CHECK_DIR > deb_check.txt
+    INIT_STAT=`cat deb_check.txt`
+    while true; do
+        sleep 30
+        CHECK_STAT=`stat -t $CHECK_DIR`
+        if [ "$INIT_STAT" != "$CHECK_STAT" ]
+        then
+            drop_repo
+            create_repo
+            sign_repo
+            serve_repo
+            CHECK_STAT=`stat -t $CHECK_DIR`
+            INIT_STAT=`echo $CHECK_STAT`
+        fi
+    done
+}
+
+# initializes script with necessary variables
+# and starts apache
+function init_script {
+    RELEASE_PATH=~/.aptly/public/dists/$DISTRIBUTION
+    /usr/sbin/apache2ctl start
+}
+
+# looks for issues with keys and packages
+# stops container if a problem is detected and alerts the user
+function error_check {
+    set -e
+
+    if [ ! -d /debs ]
     then
-        HOLD_STAT=`cat $INIT_STAT`
-    else
-        HOLD_STAT="nothing"
-    fi
- 
-    CHECK_STAT=`stat -t $CHECK_DIR`
- 
-    if [ "$HOLD_STAT" != "$CHECK_STAT" ]
-    then
-        aptly publish drop $DISTRIBUTION
-        aptly repo drop $REPO_NAME
-        aptly repo create \
-            -component="$COMPONENT" \
-            -distribution="$DISTRIBUTION" \
-            $REPO_NAME
-        aptly repo add $REPO_NAME /debs/
-        aptly publish repo \
-            -architectures="$ARCHITECTURES" \
-            -skip-signing=true \
-            $REPO_NAME
-        rm -r /var/www/html
-        mkdir /var/www/html
-        cp -r ~/.aptly/public/. /var/www/html/.
-        echo $NEW_STAT > $INIT_STAT
+        echo "Mount your Debian package directory to /debs."
+        exit 1
     fi
 
-done
+}
+
+main "$@"
