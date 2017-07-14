@@ -25,6 +25,7 @@ optionally run with the additional flags shown below, which will sign the repo w
 - The -v flag mounts a specified host directory into the container, enabling the container to share files in this directory with the host. This creates a location to upload packages and allows for repo updates without restarting the container.
 
 ***ALPHA VERSION***
+
 May abstract hosting to a seperate container in the future 
 
 Container which builds, hosts, and optionally signs a public repository from a directory of .deb packages and updates this repository when changes are made to the .deb directory
@@ -43,7 +44,9 @@ sudo docker run -e GPG_ID=1234EXAMPLE -e GPG_PASS=pass -p 4000:80 -v ~/test-debs
 - signing is now supported
 
 ***NOTE***
+
 Anyone who wishes to consume a signed repo must first pull the public key, either manually or via a keyserver
 
-notes on gpg key creation: https://www.gnupg.org/gph/en/manual/c14.html
-notes on obtaining gpg public key: https://askubuntu.com/questions/36507/how-do-i-import-a-public-key
+- notes on gpg key creation: https://www.gnupg.org/gph/en/manual/c14.html
+
+- notes on obtaining gpg public key: https://askubuntu.com/questions/36507/how-do-i-import-a-public-key
