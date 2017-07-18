@@ -16,6 +16,13 @@ optionally run with the additional flags shown below, which will sign the repo w
 
 - sudo docker run -e GPG_ID=1234EXAMPLE -e GPG_PASS=pass -p 4000:80 -v ~/test-debs:/debs -v ~/.gnupg:/.gnupg davidpatawaran/debserve
 
+In order to give the repo a custom name, distribution, and/or component, pass the docker run command -e flags with the desired variable values. The command below will create a repo named "example", holding the distribution "stable" and component "contrib" without these flags the repo defaults to name:debserve distribtion:testing component:main
+
+- sudo docker run -e REPO_NAME=example -e DISTRIBUTION=stable -e COMPONENT=contrib -p 4000:80 -v ~/test-debs:/debs davidpatawaran/debserve
+
+
+to consume packages, add 'deb http://repourl/ testing main' to /etc/apt/sources.list and apt-get update
+
 ***docker run flags***
 
 - The -e flag passes an environmental variable to the Docker container, to be used within the script.
