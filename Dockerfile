@@ -7,7 +7,7 @@ ENV GNUPGHOME /.gnupg
 ENV GPG_ID ""
 
 # defaults for repo creation
-ENV REPO_NAME L4fame
+ENV REPO_NAME debserve
 ENV DISTRIBUTION testing
 ENV COMPONENT main
 ENV ARCHITECTURES amd64,i386,x86
