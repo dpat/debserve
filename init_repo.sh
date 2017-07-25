@@ -37,7 +37,7 @@ function create_repo {
 }
 
 # manually sign Release file for authenticated repo if specified
-# aptly gpg2 signing is not supported so this is done manually
+# Aptly gpg2 signing is not supported so this is done manually
 function sign_repo {
     if [ "$GPG_ID" != "" ]
     then
@@ -50,15 +50,24 @@ function sign_repo {
 
 # delete repo in order to re-publish
 function drop_repo {
-    aptly publish drop $DISTRIBUTION
-    aptly repo drop $REPO_NAME
+    if [[ $(aptly publish list -raw) ]]
+    then 
+        aptly publish drop $DISTRIBUTION
+    fi
+    if [[ $(aptly repo list -raw) ]]
+    then 
+        aptly repo drop $REPO_NAME
+    fi
 }
 
 # move repo to whatever location hosting software is using
+# additionally, generate and add status file for Repo
 function serve_repo {
     rm -r /var/www/html
     mkdir /var/www/html
     cp -r ~/.aptly/public/. /var/www/html/.
+
+    generate_status
 }
 
 # check for changes to .deb directory
@@ -82,24 +91,41 @@ function update_repo {
     done
 }
 
-# initializes script with necessary variables
-# and starts apache
+# initializes script with necessary variables and starts Apache
+# also keeps track of the number of times the container restarts
+# drops any pre-existing repos in case the container has restarted
 function init_script {
     RELEASE_PATH=~/.aptly/public/dists/$DISTRIBUTION
+    touch restarts.txt
+    RESTARTS=`cat restarts.txt`
+    RESTARTS=$((RESTARTS+1))
+    echo $RESTARTS > restarts.txt
+    START_TIME=`date`
     /usr/sbin/apache2ctl start
+    drop_repo
 }
 
 # looks for issues with keys and packages
 # stops container if a problem is detected and alerts the user
 function error_check {
     set -e
-
     if [ ! -d /debs ]
     then
         echo "Mount your Debian package directory to /debs."
         exit 1
     fi
+}
 
+# generates repo and container status for debugging purposes
+function generate_status {
+    echo "Last Started:" $START_TIME > status.txt
+    echo "Restarted:" $((RESTARTS-1)) "times" >> status.txt
+    echo `ls -l debs | wc -l` "packages uploaded" >> status.txt
+    echo "" >> status.txt
+    echo "Packages included in this repo:" >> status.txt
+    echo `ls -1 debs` >> status.txt
+
+    cp status.txt /var/www/html/.
 }
 
 main "$@"
