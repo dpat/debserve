@@ -20,10 +20,13 @@ In order to give the repo a custom name, distribution, and/or component, pass th
 
 - sudo docker run -e REPO_NAME=example -e DISTRIBUTION=stable -e COMPONENT=contrib -p 4000:80 -v ~/test-debs:/debs davidpatawaran/debserve
 
+run with --name $NAME to name the container, and --restart always to have the container restart whenever it exits
 
-to consume packages, add 'deb http://repourl/ testing main' to /etc/apt/sources.list and apt-get update
+to consume packages, add 'deb http://$HOSTIP:$PORT/ $DISTRIBUTION $COMPONENT' to /etc/apt/sources.list and apt-get update
 
 ***docker run flags***
+
+- The -d flag (detached) runs the container in the background and prints the container's ID
 
 - The -e flag passes an environmental variable to the Docker container, to be used within the script.
 
@@ -47,8 +50,17 @@ The command below will do the same as above, additionally signing the repo with 
 
 sudo docker run -e GPG_ID=1234EXAMPLE -e GPG_PASS=pass -p 4000:80 -v ~/test-debs:/debs -v ~/.gnupg:/.gnupg davidpatawaran/debserve
 
-***v3 functionality additions:***
-- signing is now supported
+***Troubleshooting***
+
+Should there be an unknown failure within this container the command below can be used to show the output a container is generating when it is not run interactively
+- sudo docker logs --tail 50 --follow --timestamps $CONTAINER_ID
+
+If necessary, the command below can be used to open a shell inside the container
+- sudo docker exec -i -t $CONTAINER_ID /bin/bash
+
+***v4 functionality additions:***
+- repo status.txt implemented
+- restart bug fixed
 
 ***NOTE***
 
