@@ -6,7 +6,7 @@ Debian-based repository creation and hosting via Aptly and Apache
 Container which builds, hosts, and optionally signs a public repository from a directory of .deb packages and updates this repository when changes are made to the .deb directory
 
 ***Dockerhub:***
-https://hub.docker.com/r/davidpatawaran/debserve/
+https://hub.docker.com/r/davidpatawaran/debserve/ *note: dockerhub container uses NGINX rather then Apache
 
 ***USAGE***
 
@@ -59,3 +59,5 @@ Anyone who wishes to consume a signed repo must first pull the public key, eithe
 - notes on gpg key creation: https://www.gnupg.org/gph/en/manual/c14.html
 
 - notes on obtaining gpg public key: https://askubuntu.com/questions/36507/how-do-i-import-a-public-key
+
+***Debserve as used in the FAME project here: https://github.com/FabricAttachedMemory/l4fame-repo-container***
